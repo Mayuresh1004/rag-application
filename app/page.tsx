@@ -291,7 +291,7 @@ const handleStreamChat = async () => {
           <p className="text-slate-400">Upload data and chat with your documents</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-120px)]">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Data Input & Store */}
           <div className="space-y-4">
             <Card className="bg-slate-900 border-slate-800">
@@ -301,13 +301,14 @@ const handleStreamChat = async () => {
               <CardContent className="space-y-4">
                 {/* Text Input */}
                 <div className="space-y-2">
-                  <Textarea
-                    placeholder="Add Your text content..."
-                    value={textInput}
-                    onChange={(e) => setTextInput(e.target.value)}
-                    className="bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-400 min-h-[5rem] max-h-40 overflow-auto resize-none"
-                  />
-
+                  <ScrollArea className="max-h-32">
+                    <Textarea
+                      placeholder="Paste text content..."
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      className="bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-400 min-h-20 resize-none"
+                    />
+                  </ScrollArea>
                   <Button
                     onClick={handleTextSubmit}
                     disabled={!textInput.trim()}
@@ -323,10 +324,10 @@ const handleStreamChat = async () => {
                     <Input
                       type="file"
                       multiple
-                      accept=".pdf,.csv,.txt,.docx,"
+                      accept=".pdf,.csv,.txt,.docx,.md"
                       onChange={handleFileUpload}
                       className="bg-slate-800 border-slate-700 text-slate-100 file:bg-emerald-600 file:text-white file:border-0 file:rounded-md file:px-3 file:py-1 file:mr-3 hover:file:bg-emerald-700 cursor-pointer"
-                      id="file-upload"
+                      id="fileUpload"
                     />
                   </div>
                   <div className="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center hover:border-slate-600 transition-colors">
@@ -334,13 +335,13 @@ const handleStreamChat = async () => {
                     <p className="text-sm text-slate-400">
                       Drag & drop files here or{" "}
                       <label
-                        htmlFor="file-upload"
+                        htmlFor="fileUpload"
                         className="text-emerald-400 hover:text-emerald-300 cursor-pointer underline"
                       >
                         browse files
                       </label>
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Supports PDF, CSV, TXT, DOCX</p>
+                    <p className="text-xs text-slate-500 mt-1">Supports PDF, CSV, TXT, DOCX, MD</p>
                   </div>
                 </div>
 
@@ -364,7 +365,6 @@ const handleStreamChat = async () => {
               </CardContent>
             </Card>
 
-            
             <Card className="bg-slate-900 border-slate-800 flex-1">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg text-slate-100 flex items-center gap-2">
@@ -405,146 +405,153 @@ const handleStreamChat = async () => {
           </div>
 
           {/* Right Column - Chat */}
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg text-slate-100 flex items-center gap-2">
-                  <Bot className="h-5 w-5" />
-                  Chat
+          <div className="lg:col-span-2">
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg text-slate-100 flex items-center gap-2">
+                    <Bot className="h-5 w-5" />
+                    Chat
+                    {chatMessages.length > 0 && (
+                      <span className="bg-slate-800 text-slate-300 px-2 py-1 rounded-md text-sm">
+                        {chatMessages.length}
+                      </span>
+                    )}
+                  </CardTitle>
                   {chatMessages.length > 0 && (
-                    <span className="bg-slate-800 text-slate-300 px-2 py-1 rounded-md text-sm">
-                      {chatMessages.length}
-                    </span>
-                  )}
-                </CardTitle>
-                {chatMessages.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearChat} className="text-slate-400 hover:text-slate-200">
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              <ScrollArea className="h-[700px] px-6 pb-4">
-                {chatMessages.length === 0 ? (
-                  <div className="text-center py-8 text-slate-400">
-                    <Bot className="h-12 w-12 mx-auto mb-3 text-slate-600" />
-                    <p>Ask questions about your data</p>
-                    <p className="text-sm text-slate-500 mt-1">Upload some documents first to get started</p>
-                  </div>
-                ) : (
-                  chatMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex gap-3 mb-4 ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearChat}
+                      className="text-slate-400 hover:text-slate-200"
                     >
-                      {message.type === "assistant" && (
-                        <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                          <Bot className="h-4 w-4 text-white" />
-                        </div>
-                      )}
-                      <div className={`max-w-[75%] ${message.type === "user" ? "order-1" : ""}`}>
-                        <div
-                          className={`p-3 rounded-lg ${
-                            message.type === "user"
-                              ? "bg-emerald-600 text-white"
-                              : "bg-slate-800 text-slate-200 border border-slate-700"
-                          }`}
-                        >
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}
-                          components={{
-                            p: ({ node, ...props }) => <p className="text-gray-300" {...props} />,
-                            h1: ({ node, ...props }) => <h1 className="text-xl font-bold" {...props} />,
-                          }}>
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <ScrollArea className="h-[700px] px-6 pb-4">
+                  {chatMessages.length === 0 ? (
+                    <div className="text-center py-8 text-slate-400">
+                      <Bot className="h-12 w-12 mx-auto mb-3 text-slate-600" />
+                      <p>Ask questions about your data</p>
+                      <p className="text-sm text-slate-500 mt-1">Upload some documents first to get started</p>
+                    </div>
+                  ) : (
+                    chatMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex gap-3 mb-4 ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                      >
+                        {message.type === "assistant" && (
+                          <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                            <Bot className="h-4 w-4 text-white" />
+                          </div>
+                        )}
+                        <div className={`max-w-[75%] ${message.type === "user" ? "order-1" : ""}`}>
+                          <div
+                            className={`p-3 rounded-lg ${
+                              message.type === "user"
+                                ? "bg-emerald-600 text-white"
+                                : "bg-slate-800 text-slate-200 border border-slate-700"
+                            }`}
+                          >
+                        <div className="prose prose-invert max-w-none text-slate-200">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                          >
                             {message.content}
                           </ReactMarkdown>
-
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs text-slate-500">{formatTime(message.timestamp)}</span>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyMessage(message.content)}
-                            className="h-6 w-6 p-0 text-slate-500 hover:text-slate-300"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                          {message.type === "assistant" && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-slate-500 hover:text-emerald-400"
-                              >
-                                <ThumbsUp className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 text-slate-500 hover:text-red-400"
-                              >
-                                <ThumbsDown className="h-3 w-3" />
-                              </Button>
-                            </>
-                          )}
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-slate-500">{formatTime(message.timestamp)}</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => copyMessage(message.content)}
+                              className="h-6 w-6 p-0 text-slate-500 hover:text-slate-300"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                            {message.type === "assistant" && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 text-slate-500 hover:text-emerald-400"
+                                >
+                                  <ThumbsUp className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 w-6 p-0 text-slate-500 hover:text-red-400"
+                                >
+                                  <ThumbsDown className="h-3 w-3" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                        {message.type === "user" && (
+                          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-slate-300" />
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                  {isLoading && (
+                    <div className="flex gap-3 justify-start mb-4">
+                      <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                        <Bot className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
+                          <div
+                            className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.1s" }}
+                          ></div>
+                          <div
+                            className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
+                            style={{ animationDelay: "0.2s" }}
+                          ></div>
                         </div>
                       </div>
-                      {message.type === "user" && (
-                        <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center flex-shrink-0">
-                          <User className="h-4 w-4 text-slate-300" />
-                        </div>
-                      )}
                     </div>
-                  ))
-                )}
-                {isLoading && (
-                  <div className="flex gap-3 justify-start mb-4">
-                    <div className="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
-                      <Bot className="h-4 w-4 text-white" />
-                    </div>
-                    <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg">
-                      <div className="flex gap-1">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.1s" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </ScrollArea>
-            </CardContent>
-            <div className="px-6 pb-6 pt-4 border-t border-slate-800">
-              <div className="flex gap-2">
-                <ScrollArea className="flex-1 max-h-32">
-                  <Textarea
-                    placeholder="Ask about your data..."
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleStreamChat()}
-                    disabled={dataSources.length === 0 || isLoading}
-                    className="bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-400 min-h-10 resize-none"
-                    rows={1}
-                  />
+                  )}
                 </ScrollArea>
-                <Button
-                  onClick={handleStreamChat}
-                  disabled={!chatInput.trim() || dataSources.length === 0 || isLoading}
-                  className="bg-emerald-600 hover:bg-emerald-700 self-end"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+              </CardContent>
+              <div className="px-6 pb-6 pt-4 border-t border-slate-800">
+                <div className="flex gap-2">
+                  <ScrollArea className="flex-1 max-h-32">
+                    <Textarea
+                      placeholder="Ask about your data..."
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleStreamChat()}
+                      disabled={dataSources.length === 0 || isLoading}
+                      className="bg-slate-800 border-slate-700 text-slate-100 placeholder-slate-400 min-h-10 resize-none"
+                      rows={1}
+                    />
+                  </ScrollArea>
+                  <Button
+                    onClick={handleStreamChat}
+                    disabled={!chatInput.trim() || dataSources.length === 0 || isLoading}
+                    className="bg-emerald-600 hover:bg-emerald-700 self-end"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
-      </div>
-    </div>
+        </div>
+        </div>
+    
   )
 }

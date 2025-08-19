@@ -42,6 +42,7 @@ export async function POST(req: Request) {
     Only answer based on the available context from file only.      
     Format output in **Markdown** (use lists, bold/italics, and code blocks when relevant).
     In The end always add a reference to the source(s) of the answer.
+    for source reference dont give entire filepath just give the filename for file and link for website
     If context does not contain the answer, say "I do not currently have the available context for this question."
       
       CONTEXT: ${JSON.stringify(relevantChunks)}
