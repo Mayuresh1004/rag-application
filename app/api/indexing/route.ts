@@ -87,7 +87,8 @@ export async function POST(req: NextRequest) {
     // Index into Qdrant
     const vectorStore = await QdrantVectorStore.fromDocuments(docs, 
         embeddings, {
-      url: process.env.QDRANT_URL,
+      apiKey: process.env.QDRANT_API_KEY!,
+      url: process.env.QDRANT_URL || "http://localhost:6333",
       collectionName: "rag_collection",
     });
 
