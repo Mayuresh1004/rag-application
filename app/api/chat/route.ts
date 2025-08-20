@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const vectorStore = await QdrantVectorStore.fromExistingCollection(
       embeddings,
       {
-        url: "http://localhost:6333",
+        url: process.env.QDRANT_URL ,
         collectionName: "rag_collection",
       }
     );
